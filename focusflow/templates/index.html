@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FocusFlow ⚡ — Learning Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+
+<!-- ══════════ SIDEBAR ══════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <span class="brand-icon">⚡</span>
+    <span class="brand-name">FocusFlow</span>
+  </div>
+  <nav>
+    <button class="nav-item active" onclick="showSection('dashboard',this)"><span>🏠</span> Dashboard</button>
+    <button class="nav-item" onclick="showSection('tasks',this)"><span>✅</span> Daily Tasks <span class="badge" id="badge-tasks"></span></button>
+    <button class="nav-item" onclick="showSection('focus',this)"><span>🎯</span> Focus Timer</button>
+    <button class="nav-item" onclick="showSection('goals',this)"><span>🚀</span> Learning Goals</button>
+    <button class="nav-item" onclick="showSection('notes',this)"><span>📓</span> Daily Notes</button>
+    <button class="nav-item" onclick="showSection('guide',this)"><span>📚</span> Learning Guide</button>
+    <button class="nav-item" onclick="showSection('setup',this)"><span>⚙️</span> Setup & Install</button>
+  </nav>
+  <div class="sidebar-foot">
+    🔥 <span id="streak-num">0</span> day streak
+  </div>
+</aside>
+
+<!-- ══════════ MAIN ══════════ -->
+<main class="main" id="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <span id="topbar-date" class="topbar-date"></span>
+    <div class="mood-row">
+      <span class="mood-label">Mood:</span>
+      <button class="mood-btn" data-mood="great">😄</button>
+      <button class="mood-btn" data-mood="good">🙂</button>
+      <button class="mood-btn active" data-mood="neutral">😐</button>
+      <button class="mood-btn" data-mood="tired">😴</button>
+      <button class="mood-btn" data-mood="stressed">😤</button>
+    </div>
+  </header>
+
+  <!-- ══ DASHBOARD ══ -->
+  <section class="section active" id="sec-dashboard">
+    <div class="sec-head">
+      <h1>Good to see you, Akshay 👋</h1>
+      <p>Your AI/ML learning command center.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card green"><div class="si">✅</div><div><div class="sv" id="stat-done">0</div><div class="sl">Done today</div></div></div>
+      <div class="stat-card orange"><div class="si">📋</div><div><div class="sv" id="stat-pending">0</div><div class="sl">Pending</div></div></div>
+      <div class="stat-card red"><div class="si">⚠️</div><div><div class="sv" id="stat-overdue">0</div><div class="sl">Overdue</div></div></div>
+      <div class="stat-card blue"><div class="si">⏱️</div><div><div class="sv" id="stat-focus">0m</div><div class="sl">Focus today</div></div></div>
+      <div class="stat-card purple"><div class="si">🚀</div><div><div class="sv" id="stat-goals">0</div><div class="sl">Active goals</div></div></div>
+      <div class="stat-card yellow"><div class="si">🔥</div><div><div class="sv" id="stat-streak">0</div><div class="sl">Day streak</div></div></div>
+    </div>
+
+    <div class="dash-cols">
+      <div class="dash-card">
+        <div class="dc-head"><h3>📋 Priority Tasks</h3>
+          <button class="ghost-btn" onclick="showSection('tasks', document.querySelector('[onclick*=tasks]'))">View all →</button>
+        </div>
+        <div id="dash-tasks"></div>
+      </div>
+      <div class="dash-card">
+        <div class="dc-head"><h3>🚀 Goals Progress</h3>
+          <button class="ghost-btn" onclick="showSection('goals', document.querySelector('[onclick*=goals]'))">View all →</button>
+        </div>
+        <div id="dash-goals"></div>
+      </div>
+    </div>
+
+    <div class="quote-box">
+      <div class="quote-text" id="quote-text"></div>
+      <div class="quote-auth" id="quote-author"></div>
+    </div>
+  </section>
+
+  <!-- ══ TASKS ══ -->
+  <section class="section" id="sec-tasks">
+    <div class="sec-head">
+      <h1>Daily Tasks</h1>
+      <button class="primary-btn" onclick="openAddTask()">+ Add Task</button>
+    </div>
+    <div class="filter-bar">
+      <div class="ftabs">
+        <button class="ftab active" onclick="filterTasks('all',this)">All</button>
+        <button class="ftab" onclick="filterTasks('study',this)">📖 Study</button>
+        <button class="ftab" onclick="filterTasks('project',this)">💻 Project</button>
+        <button class="ftab" onclick="filterTasks('revision',this)">🔄 Revision</button>
+        <button class="ftab" onclick="filterTasks('personal',this)">🙋 Personal</button>
+      </div>
+      <label class="toggle-row"><input type="checkbox" id="show-completed" onchange="loadTasks()"> Show completed</label>
+    </div>
+    <div id="tasks-list"></div>
+  </section>
+
+  <!-- ══ FOCUS ══ -->
+  <section class="section" id="sec-focus">
+    <div class="sec-head">
+      <h1>Focus Timer</h1>
+      <p>Deep work — Pomodoro style</p>
+    </div>
+    <div class="focus-layout">
+      <div class="timer-card">
+        <div class="mode-tabs">
+          <button class="mode-btn active" onclick="setMode(25,this)">🍅 25m</button>
+          <button class="mode-btn" onclick="setMode(50,this)">💪 50m</button>
+          <button class="mode-btn" onclick="setMode(5,this)">☕ 5m break</button>
+          <button class="mode-btn" onclick="setMode(15,this)">😴 15m break</button>
+        </div>
+        <div class="timer-wrap">
+          <svg class="timer-svg" viewBox="0 0 200 200">
+            <circle class="ring-bg" cx="100" cy="100" r="88"/>
+            <circle class="ring-fg" id="ring" cx="100" cy="100" r="88"/>
+          </svg>
+          <span class="timer-time" id="timer-time">25:00</span>
+        </div>
+        <input id="focus-label" class="focus-input" type="text" placeholder="What are you working on? e.g. Striver DSA"/>
+        <div class="timer-btns">
+          <button id="btn-start" class="primary-btn" onclick="startTimer()">▶ Start</button>
+          <button id="btn-pause" class="pause-btn" onclick="pauseTimer()" style="display:none">⏸ Pause</button>
+          <button class="ghost-btn" onclick="resetTimer()">↺ Reset</button>
+        </div>
+        <div class="sess-info">
+          Sessions today: <strong id="sess-count">0</strong> &nbsp;|&nbsp;
+          Total focus: <strong id="focus-today">0m</strong>
+        </div>
+      </div>
+      <div class="sess-panel">
+        <h3>Recent Sessions</h3>
+        <div id="sessions-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ GOALS ══ -->
+  <section class="section" id="sec-goals">
+    <div class="sec-head">
+      <h1>Learning Goals</h1>
+      <button class="primary-btn" onclick="openAddGoal()">+ Add Goal</button>
+    </div>
+    <div id="goals-list" class="goals-grid"></div>
+  </section>
+
+  <!-- ══ NOTES ══ -->
+  <section class="section" id="sec-notes">
+    <div class="sec-head">
+      <h1>Daily Notes</h1>
+      <p>Your daily reflection journal</p>
+    </div>
+    <div class="notes-layout">
+      <div class="notes-card">
+        <div class="notes-toolbar">
+          <span id="notes-date" class="notes-date"></span>
+          <button class="primary-btn" onclick="saveNote()">💾 Save  (Ctrl+S)</button>
+        </div>
+        <textarea id="notes-ta" class="notes-ta" placeholder="Write your thoughts here...
+
+📌 What did I learn today?
+🎯 What will I do tomorrow?
+💡 Any new ideas?
+⚠️ Any blockers?"></textarea>
+      </div>
+      <div class="notes-side">
+        <h4>💡 Prompts</h4>
+        <ul class="prompt-list">
+          <li>What did you learn today?</li>
+          <li>Did you hit your focus target?</li>
+          <li>What needs more revision?</li>
+          <li>Your #1 priority tomorrow?</li>
+          <li>Any blockers to clear?</li>
+        </ul>
+        <h4 style="margin-top:1.2rem">Quick Insert</h4>
+        <div class="snips">
+          <button onclick="insertSnip('📌 Learned:\n')">📌 Learned</button>
+          <button onclick="insertSnip('🎯 Tomorrow:\n')">🎯 Tomorrow</button>
+          <button onclick="insertSnip('💡 Idea:\n')">💡 Idea</button>
+          <button onclick="insertSnip('⚠️ Blocker:\n')">⚠️ Blocker</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ GUIDE ══ -->
+  <section class="section" id="sec-guide">
+    <div class="sec-head">
+      <h1>AI/ML Learning Guide</h1>
+      <p>VTU Student → NVIDIA/Google Intern Roadmap</p>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-head"><span class="phase-tag">Phase 1</span><h3>Python & DSA Foundation <span class="phase-time">Jun–Jul 2026</span></h3></div>
+      <div class="phase-items">
+        <div class="gi done">✅ Python basics — OOP, functions, file I/O</div>
+        <div class="gi">🔲 Striver's A-to-Z DSA — sorting, arrays, linked lists</div>
+        <div class="gi">🔲 LeetCode Easy — 30 problems</div>
+        <div class="gi">🔲 NumPy, Pandas, Matplotlib mastery</div>
+        <div class="gi">🔲 Deploy IPL Prediction model on Hugging Face Spaces</div>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-head"><span class="phase-tag">Phase 2</span><h3>ML Depth & Projects <span class="phase-time">Jul–Aug 2026</span></h3></div>
+      <div class="phase-items">
+        <div class="gi">🔲 Scikit-learn — all major algorithms</div>
+        <div class="gi">🔲 Fake News Detector (BERT + HuggingFace) — deploy</div>
+        <div class="gi">🔲 ResNet image classifier project</div>
+        <div class="gi">🔲 CrowdPulse YOLOv8 — finalize + GitHub README</div>
+        <div class="gi">🔲 Fast.ai course completion</div>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-head"><span class="phase-tag">Phase 3</span><h3>Open Source & Portfolio <span class="phase-time">Aug–Sep 2026</span></h3></div>
+      <div class="phase-items">
+        <div class="gi">🔲 First PR to Hugging Face Transformers or Scikit-learn</div>
+        <div class="gi">🔲 GitHub — 4 pinned repos with clean READMEs</div>
+        <div class="gi">🔲 LinkedIn — 500+ connections, 3 project posts</div>
+        <div class="gi">🔲 Write one blog post on Medium / Hashnode</div>
+        <div class="gi">🔲 LeetCode Medium — 50 problems</div>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-head"><span class="phase-tag">Phase 4</span><h3>Internship Hunt <span class="phase-time">Oct–Nov 2026</span></h3></div>
+      <div class="phase-items">
+        <div class="gi">🔲 Resume — 1 page, ATS-ready</div>
+        <div class="gi">🔲 Apply: Google, Microsoft Research, Amazon, Flipkart, Swiggy</div>
+        <div class="gi">🔲 Mock interviews — DSA + ML theory</div>
+        <div class="gi">🔲 Cold-email 10 researchers for research internship</div>
+        <div class="gi">🔲 NVIDIA Student programs — check openings</div>
+      </div>
+    </div>
+
+    <h3 style="margin:1.5rem 0 1rem">📚 Essential Resources</h3>
+    <div class="res-grid">
+      <a class="res-card" href="https://roadmap.sh/ai-data-scientist" target="_blank"><div class="ri">🗺️</div><div class="rt">AI Roadmap</div><div class="rs">roadmap.sh</div></a>
+      <a class="res-card" href="https://huggingface.co/learn/nlp-course" target="_blank"><div class="ri">🤗</div><div class="rt">HuggingFace NLP</div><div class="rs">huggingface.co</div></a>
+      <a class="res-card" href="https://takeuforward.org/strivers-a2z-dsa-course/strivers-a2z-dsa-course-sheet-2" target="_blank"><div class="ri">📊</div><div class="rt">Striver's A2Z DSA</div><div class="rs">takeuforward.org</div></a>
+      <a class="res-card" href="https://fast.ai" target="_blank"><div class="ri">⚡</div><div class="rt">Fast.ai</div><div class="rs">fast.ai</div></a>
+      <a class="res-card" href="https://leetcode.com" target="_blank"><div class="ri">🧩</div><div class="rt">LeetCode</div><div class="rs">leetcode.com</div></a>
+      <a class="res-card" href="https://kaggle.com" target="_blank"><div class="ri">🏆</div><div class="rt">Kaggle</div><div class="rs">kaggle.com</div></a>
+    </div>
+  </section>
+
+  <!-- ══ SETUP ══ -->
+  <section class="section" id="sec-setup">
+    <div class="sec-head">
+      <h1>Setup & Install</h1>
+      <p>Run FocusFlow + your full ML stack</p>
+    </div>
+    <div class="setup-grid">
+
+      <div class="setup-card">
+        <h3>🐍 Run FocusFlow</h3>
+        <div class="code-label">Install (only 2 libraries needed)</div>
+        <pre>pip install flask flask-sqlalchemy</pre><button class="copy-btn" onclick="copyBlock(this)">Copy</button>
+        <div class="code-label" style="margin-top:.75rem">Start the server</div>
+        <pre>python app.py</pre><button class="copy-btn" onclick="copyBlock(this)">Copy</button>
+        <div class="code-label" style="margin-top:.75rem">Open in browser</div>
+        <pre>http://localhost:5000</pre>
+      </div>
+
+      <div class="setup-card">
+        <h3>📦 Full ML Stack Install</h3>
+        <div class="code-label">One command for everything</div>
+        <pre>pip install numpy pandas scikit-learn matplotlib seaborn jupyter torch torchvision transformers datasets ultralytics flask flask-sqlalchemy</pre>
+        <button class="copy-btn" onclick="copyBlock(this)">Copy</button>
+      </div>
+
+      <div class="setup-card">
+        <h3>🐙 Push to GitHub</h3>
+        <pre>git init
+git add .
+git commit -m "feat: FocusFlow productivity tracker"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/focusflow.git
+git push -u origin main</pre>
+        <button class="copy-btn" onclick="copyBlock(this)">Copy</button>
+      </div>
+
+      <div class="setup-card">
+        <h3>📄 requirements.txt</h3>
+        <pre>flask==3.0.3
+flask-sqlalchemy==3.1.1
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+matplotlib>=3.7.0
+torch>=2.2.0
+transformers>=4.40.0
+ultralytics>=8.2.0
+jupyter>=1.0.0</pre>
+        <button class="copy-btn" onclick="copyBlock(this)">Copy</button>
+      </div>
+
+      <div class="setup-card" style="grid-column: span 2">
+        <h3>💼 LinkedIn Post Template</h3>
+        <div class="li-post" id="li-post">🚀 Just built FocusFlow — my personal AI/ML learning productivity tracker!
+
+Built with Python + Flask, it helps me:
+✅ Track daily study tasks with priorities & reminders
+🎯 Run Pomodoro focus sessions (25m/50m deep work)
+📊 Monitor learning goal progress with sliders
+📓 Keep a daily reflection journal with mood tracker
+
+As a 1st year AI/ML student at SMVIT Bangalore (VTU), I'm building in public. Every project, every commit, every line of code brings me closer to my goal of interning at NVIDIA and Google.
+
+🔗 GitHub: github.com/YOUR_USERNAME/focusflow
+
+#Python #Flask #MachineLearning #BuildInPublic #VTU #SMVIT #AIMLStudent</div>
+        <button class="primary-btn" style="margin-top:.75rem" onclick="copyLinkedIn()">📋 Copy LinkedIn Post</button>
+      </div>
+
+    </div>
+  </section>
+
+</main><!-- end main -->
+
+<!-- ══ TASK MODAL ══ -->
+<div class="overlay" id="modal-task" onclick="overlayClick(event,'modal-task')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modal-task-title">Add Task</h3>
+      <button onclick="closeModal('modal-task')">✕</button>
+    </div>
+    <div class="modal-body">
+      <label>Task Title *</label>
+      <input id="t-title" class="inp" type="text" placeholder="e.g. Complete Striver Array Module"/>
+
+      <label>Description</label>
+      <textarea id="t-desc" class="inp ta" placeholder="Any notes or details..."></textarea>
+
+      <div class="two-col">
+        <div>
+          <label>Category</label>
+          <select id="t-cat" class="inp">
+            <option value="study">📖 Study</option>
+            <option value="project">💻 Project</option>
+            <option value="revision">🔄 Revision</option>
+            <option value="personal">🙋 Personal</option>
+          </select>
+        </div>
+        <div>
+          <label>Priority</label>
+          <select id="t-pri" class="inp">
+            <option value="high">🔴 High</option>
+            <option value="medium" selected>🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <label>Due Date</label>
+          <input id="t-date" class="inp" type="date"/>
+        </div>
+        <div>
+          <label>Due Time</label>
+          <input id="t-time" class="inp" type="time"/>
+        </div>
+      </div>
+
+      <label>Tags (comma separated)</label>
+      <input id="t-tags" class="inp" type="text" placeholder="ML, DSA, flask"/>
+    </div>
+    <div class="modal-foot">
+      <button class="ghost-btn" onclick="closeModal('modal-task')">Cancel</button>
+      <button class="primary-btn" onclick="saveTask()">💾 Save Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GOAL MODAL ══ -->
+<div class="overlay" id="modal-goal" onclick="overlayClick(event,'modal-goal')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modal-goal-title">Add Learning Goal</h3>
+      <button onclick="closeModal('modal-goal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <label>Goal Title *</label>
+      <input id="g-title" class="inp" type="text" placeholder="e.g. Complete Fast.ai course"/>
+
+      <label>Description</label>
+      <textarea id="g-desc" class="inp ta" placeholder="What will you learn? Why does it matter?"></textarea>
+
+      <div class="two-col">
+        <div>
+          <label>Target Date</label>
+          <input id="g-target" class="inp" type="date"/>
+        </div>
+        <div>
+          <label>Progress %</label>
+          <input id="g-progress" class="inp" type="number" min="0" max="100" value="0"/>
+        </div>
+      </div>
+
+      <label>Resources (one URL per line)</label>
+      <textarea id="g-resources" class="inp ta" placeholder="https://fast.ai&#10;https://huggingface.co/..."></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="ghost-btn" onclick="closeModal('modal-goal')">Cancel</button>
+      <button class="primary-btn" onclick="saveGoal()">💾 Save Goal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
